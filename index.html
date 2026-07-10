@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproductor Estilo Vinilo Premium</title> <!--ESTA VERSION_QUE SE DEBE CORREGIR-->
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0b0b0b;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* FONDO DINÁMICO */
+        .background-blur {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px);
+            opacity: 0.3;
+            z-index: 1;
+            pointer-events: none;
+            animation: zoomBucle 8s ease-in-out infinite alternate;
+        }
+
+        .vignette {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 40%, rgba(41, 41, 41, 0.377) 150%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        @keyframes zoomBucle {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        /* INTERFAZ PRINCIPAL: Cristal Esmerilado iOS */
+        .player-container {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            max-width: 1050px;
+            max-height: 85vh;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1.1fr 1fr;
+            align-items: center;
+            gap: 30px;
+            background: rgba(255, 255, 255, 0.04); 
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 
+                0 4px 30px rgba(0, 0, 0, 0.4),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                inset 0 10px 20px rgba(255, 255, 255, 0.05);
+        }
+
+        /* COLUMNA IZQUIERDA */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .cover-art-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 190px;
+            aspect-ratio: 1 / 1;
+            margin: 0 auto 25px auto;
+        }
+
+        .cover-art {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .cover-shadow {
+            position: absolute;
+            top: 15px;
+            left: -15px;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px);
+            opacity: 0.5;
+            z-index: 1;
+            border-radius: 12px;
+        }
+
+        .track-info { width: 100%; }
+        .track-info h2 { font-size: 1.5rem; margin-bottom: 6px; color: #fff; font-weight: 600; line-height: 1.2; }
+        .track-info h3 { font-size: 1.05rem; color: rgba(255, 255, 255, 0.7); font-weight: 400; margin-bottom: 6px; }
+        .track-info p { font-size: 0.85rem; color: rgba(255, 255, 255, 0.4); }
+
+        /* COLUMNA CENTRAL: Vinilo */
+        .center-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .vinyl-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 250px;
+            aspect-ratio: 1 / 1;
+        }
+
+        .vinyl {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: 
+                radial-gradient(circle, transparent 30%, rgba(0, 0, 0, 0.95) 75%),
+                conic-gradient(
+                    from 45deg,
+                    #0a0a0a 0deg,   #1a1a1a 25deg,  #333333 45deg,  #1a1a1a 65deg,  #0a0a0a 90deg,
+                    #0a0a0a 110deg, #161616 135deg, #222222 150deg, #161616 165deg, #0a0a0a 180deg,
+                    #0a0a0a 200deg, #1a1a1a 215deg, #333333 235deg, #1a1a1a 255deg, #0a0a0a 280deg,
+                    #0a0a0a 300deg, #161616 320deg, #222222 335deg, #161616 350deg, #0a0a0a 360deg
+                );
+        }
+
+        .vinyl::before {
+            content: '';
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            z-index: 1;
+            background: repeating-radial-gradient(
+                circle,
+                rgba(0, 0, 0, 0.8) 0px,
+                rgba(0, 0, 0, 0.8) 2px,
+                rgba(255, 255, 255, 0.03) 3px,
+                rgba(0, 0, 0, 0.9) 4px
+            );
+            -webkit-mask-image: radial-gradient(circle, transparent 31%, black 32%);
+            mask-image: radial-gradient(circle, transparent 31%, black 32%);
+        }
+
+        .vinyl-center {
+            width: 32%; height: 32%;
+            border-radius: 50%;
+            background-color: #fff;
+            background-size: cover;
+            background-position: center;
+            border: 4px solid #111;
+            z-index: 2;
+        }
+
+        /* ANIMACIÓN DEL VINILO */
+        .rotating { animation: rotateVinyl 20s linear infinite; }
+
+        /* NUEVO: Estado de pausa para la animación */
+        .animation-paused { animation-play-state: paused; }
+
+        @keyframes rotateVinyl { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* COLUMNA DERECHA */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .controls-top {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .btn-playlist {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 11px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.5s;
+        }
+        .btn-playlist:hover { background: rgba(255, 255, 255, 0.18); }
+
+        .timeline-container { width: 100%; }
+
+        .seek-bar {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.15);
+            height: 5px;
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .seek-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .time-counter {
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 10px;
+        }
+
+        /* CONTROLES MULTIMEDIA BAJO LA LÍNEA DE TIEMPO */
+        .media-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .btn-control {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        .btn-control:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.05); }
+
+        .btn-play-main {
+            background: #fff;
+            color: #000;
+            border: none;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+        .btn-play-main:hover { transform: scale(1.1); }
+
+        .mode-controls { display: flex; justify-content: center; margin-top: 15px; }
+        
+        .btn-mode {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-mode.active-mode {
+            background: rgba(29, 185, 84, 0.2);
+            border-color: rgba(29, 185, 84, 0.4);
+            color: #1db954;
+        }
+
+        /* MODAL PLAYLIST (ESTILO IPHONE CRISTAL STRICTLY VERTICAL) */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.400);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+
+        .modal-overlay.active { opacity: 0.9; pointer-events: auto; }
+
+        .modal-content {
+            background: rgba(25, 25, 25, 0.329);
+            backdrop-filter: blur(15px) saturate(150%);
+            -webkit-backdrop-filter: blur(25px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 750px;
+            max-height: 80vh;
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 15px;
+        }
+
+        .btn-close-modal { background: transparent; color: rgba(255,255,255,0.4); border: none; font-size: 1.6rem; cursor: pointer; }
+
+        .playlist-table-wrapper {
+            width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .playlist-table { width: 100%; border-collapse: collapse; text-align: left; }
+        
+        .playlist-table th {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .playlist-table td {
+            padding: 12px 10px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            vertical-align: middle;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .playlist-table tr { cursor: pointer; transition: background 0.2s; }
+        .playlist-table tr:hover { background: rgba(255, 255, 255, 0.06); }
+        .playlist-table tr.playing-row td { color: #1db954 !important; font-weight: bold; }
+
+        .mini-cover { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+
+        /* RESPONSIVE CELULARES (SÓLO MOVIMIENTO VERTICAL) */
+        @media (max-width: 900px) {
+            .player-container { grid-template-columns: 1fr 1fr; padding: 30px; }
+            .center-panel { grid-column: 1 / span 2; order: -1; margin-bottom: 15px; }
+            .vinyl-wrapper { max-width: 220px; }
+        }
+
+        /* RESPONSIVE CELULARES (CENTRADO VERTICAL PERFECTO) */
+        @media (max-width: 550px) {
+            body { 
+                padding: 15px; 
+                height: 100vh;
+                overflow: hidden;
+                display: flex;
+                align-items: center;    /* Centra el reproductor verticalmente en la pantalla */
+                justify-content: center; /* Centra el reproductor horizontalmente */
+            }
+            
+            .player-container { 
+                grid-template-columns: 1fr; 
+                padding: 20px; 
+                gap: 15px; 
+                width: 100%;
+                max-height: 94vh; /* Permite que tome el espacio necesario de forma armónica */
+                display: flex;
+                flex-direction: column;
+                justify-content: center; /* Distribuye el contenido interno de manera centrada */
+            }
+            
+            .center-panel { 
+                grid-column: 1; 
+                order: 1; 
+                margin-bottom: 5px;
+                display: flex;
+                justify-content: center;
+            }
+            
+            .vinyl-wrapper { 
+                max-width: 140px; /* Reducido ligeramente para optimizar el centrado */
+            }
+
+            .left-panel { 
+                order: 2; 
+                align-items: center; 
+                text-align: center; 
+            }
+            
+            .cover-art-wrapper { 
+                max-width: 140px; 
+                margin-bottom: 10px;
+            }
+            
+            .cover-shadow { left: 0; top: 10px; }
+            
+            .track-info h2 { font-size: 1.3rem; }
+            .track-info h3 { font-size: 0.95rem; }
+
+            .right-panel {
+                order: 3; 
+                width: 100%;
+            }
+
+            .controls-top {
+                margin-bottom: 10px;
+                justify-content: center; 
+            }
+            
+            .media-controls {
+                margin-top: 12px;
+                gap: 25px; 
+            }
+
+            .btn-control {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
+            }
+
+            .btn-play-main {
+                width: 55px;
+                height: 55px;
+                font-size: 1.2rem;
+            }
+
+            .mode-controls {
+                margin-top: 10px;
+            }
+
+            /* Configuración estricta de la tabla de la Playlist */
+            .playlist-table { table-layout: fixed; width: 100%; }
+            .playlist-table th:nth-child(4), .playlist-table td:nth-child(4),
+            .playlist-table th:nth-child(5), .playlist-table td:nth-child(5) { display: none; }
+            .playlist-table th:nth-child(1), .playlist-table td:nth-child(1) { width: 55px; }
+            .playlist-table th:nth-child(2), .playlist-table td:nth-child(2) { width: 55%; }
+            .playlist-table th:nth-child(3), .playlist-table td:nth-child(3) { width: calc(45% - 55px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-blur" id="bgBlur"></div>
+    <div class="vignette"></div>
+
+    <div class="player-container">
+        <div class="left-panel">
+            <div class="cover-art-wrapper">
+                <div class="cover-shadow" id="coverShadow"></div>
+                <img src="" alt="Caratula" class="cover-art" id="coverArt">
+            </div>
+            <div class="track-info">
+                <h2 id="trackTitle">Cargando...</h2>
+                <h3 id="trackArtist">-</h3>
+                <p id="trackAlbumAnio">-</p>
+            </div>
+        </div>
+
+        <div class="center-panel">
+            <div class="vinyl-wrapper">
+                <div class="vinyl rotating animation-paused" id="vinylDisc">
+                    <div class="vinyl-center" id="vinylCenter"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="controls-top">
+                <button class="btn-playlist" id="openPlaylistBtn">Ver Lista ☰</button>
+            </div>
+            <div class="timeline-container">
+                <input type="range" class="seek-bar" id="seekBar" value="0" max="100">
+                <div class="time-counter">
+                    <span id="currentTime">00:00</span>
+                    <span id="totalTime">00:00</span>
+                </div>
+            </div>
+            <div class="media-controls">
+                <button class="btn-control" id="prevBtn">⏮</button>
+                <button class="btn-play-main" id="playBtn">▶</button>
+                <button class="btn-control" id="nextBtn">⏭</button>
+            </div>
+            <div class="mode-controls">
+                <button class="btn-mode" id="modeBtn">🔄 Modo: Normal</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="playlistModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Mi Playlist</h4>
+                <button class="btn-close-modal" id="closePlaylistBtn">&times;</button>
+            </div>
+            <div class="playlist-table-wrapper">
+                <table class="playlist-table">
+                    <thead>
+                        <tr>
+                            <th>Carátula</th>
+                            <th>Canción</th>
+                            <th>Artista</th>
+                            <th>Álbum</th>
+                            <th>Duración</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playlistBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const audio = new Audio();
+        let listaCanciones = [];
+        let indiceActual = 0;
+        let modoReproduccion = 'normal'; 
+
+        const CARATULA_POR_DEFECTO = 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=500';
+
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const modeBtn = document.getElementById('modeBtn');
+        const seekBar = document.getElementById('seekBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        
+        const bgBlur = document.getElementById('bgBlur');
+        const coverShadow = document.getElementById('coverShadow');
+        const coverArt = document.getElementById('coverArt');
+        const vinylCenter = document.getElementById('vinylCenter');
+        const vinylDisc = document.getElementById('vinylDisc');
+
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
+        const trackAlbumAnio = document.getElementById('trackAlbumAnio');
+
+        const playlistModal = document.getElementById('playlistModal');
+        const openPlaylistBtn = document.getElementById('openPlaylistBtn');
+        const closePlaylistBtn = document.getElementById('closePlaylistBtn');
+        const playlistBody = document.getElementById('playlistBody');
+
+        async function cargarCanciones() {
+            try {
+                const res = await fetch('/api/canciones');
+                listaCanciones = await res.json();
+                if(listaCanciones.length > 0) {
+                    actualizarReproductor(0);
+                } else {
+                    trackTitle.textContent = "Agrega MP3s a la carpeta 'canciones'";
+                }
+            } catch (err) {
+                console.error("Error cargando canciones", err);
+            }
+        }
+
+        function formatearTiempo(segundos) {
+            if (isNaN(segundos) || segundos === 0) return "00:00";
+            const mins = Math.floor(segundos / 60);
+            const secs = Math.floor(segundos % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function renderizarPlaylistTabla() {
+            playlistBody.innerHTML = "";
+            listaCanciones.forEach((cancion, index) => {
+                const imgUrl = cancion.caratula ? cancion.caratula : CARATULA_POR_DEFECTO;
+                const tr = document.createElement('tr');
+                if(index === indiceActual) tr.classList.add('playing-row');
+                
+                tr.onclick = () => {
+                    actualizarReproductor(index);
+                    audio.play();
+                    playBtn.textContent = "⏸";
+                    vinylDisc.classList.add('rotating');
+                    vinylDisc.classList.remove('animation-paused'); // Fuerza el giro continuo
+                    playlistModal.classList.remove('active');
+                };
+
+                tr.innerHTML = `
+                    <td><img src="${imgUrl}" class="mini-cover"></td>
+                    <td><strong>${cancion.titulo}</strong></td>
+                    <td>${cancion.artista}</td>
+                    <td>${cancion.album}</td>
+                    <td>${formatearTiempo(cancion.duracion)}</td>
+                `;
+                playlistBody.appendChild(tr);
+            });
+        }
+
+        function actualizarReproductor(index) {
+            indiceActual = index;
+            const cancion = listaCanciones[index];
+            audio.src = `/musica/${encodeURIComponent(cancion.archivo)}`;
+            trackTitle.textContent = cancion.titulo;
+            trackArtist.textContent = cancion.artista;
+            trackAlbumAnio.textContent = `${cancion.album} (${cancion.anio})`;
+
+            const imgUrl = cancion.caratula ? cancion.caratula : CARATULA_POR_DEFECTO;
+            coverArt.src = imgUrl;
+            vinylCenter.style.backgroundImage = `url('${imgUrl}')`;
+            bgBlur.style.backgroundImage = `url('${imgUrl}')`;
+            coverShadow.style.backgroundImage = `url('${imgUrl}')`;
+
+            seekBar.value = 0;
+            currentTimeEl.textContent = "00:00";
+            
+            // === EFECTO RETORNO DE VINILO ===
+            // 1. Quitamos la animación por completo (esto resetea el ángulo a 0 grados)
+            vinylDisc.classList.remove('rotating', 'animation-paused');
+            
+            // 2. Forzamos un reflow en el navegador para que registre el cambio visual de inmediato
+            void vinylDisc.offsetWidth;
+            
+            // 3. Volvemos a añadir la rotación, pero pausada hasta que se decida reproducir
+            vinylDisc.classList.add('rotating', 'animation-paused');
+            
+            renderizarPlaylistTabla();
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (listaCanciones.length === 0) return;
+
+            if (audio.paused) {
+                audio.play();
+                playBtn.textContent = "⏸";
+                vinylDisc.classList.remove('animation-paused'); // Quita la pausa -> Gira desde donde iba
+            } else {
+                audio.pause();
+                playBtn.textContent = "▶";
+                vinylDisc.classList.add('animation-paused');    // Agrega la pausa -> Se congela ahí mismo
+            }
+        });
+
+        nextBtn.addEventListener('click', () => cambiarCancion(1));
+        prevBtn.addEventListener('click', () => cambiarCancion(-1));
+
+        function cambiarCancion(direccion) {
+            if (listaCanciones.length === 0) return;
+            if (modoReproduccion === 'shuffle' && direccion > 0) {
+                let nuevoIndice = indiceActual;
+                if (listaCanciones.length > 1) {
+                    while (nuevoIndice === indiceActual) {
+                        nuevoIndice = Math.floor(Math.random() * listaCanciones.length);
+                    }
+                }
+                actualizarReproductor(nuevoIndice);
+            } else {
+                let nuevoIndice = indiceActual + direccion;
+                if (nuevoIndice >= listaCanciones.length) nuevoIndice = 0;
+                else if (nuevoIndice < 0) nuevoIndice = listaCanciones.length - 1;
+                actualizarReproductor(nuevoIndice);
+            }
+            audio.play();
+            playBtn.textContent = "⏸";
+            vinylDisc.classList.add('rotating');
+            vinylDisc.classList.remove('animation-paused'); // Asegura que gire la nueva canción
+        }
+
+        modeBtn.addEventListener('click', () => {
+            switch(modoReproduccion) {
+                case 'normal':
+                    modoReproduccion = 'shuffle';
+                    modeBtn.textContent = "🔀 Modo: Aleatorio";
+                    modeBtn.classList.add('active-mode');
+                    break;
+                case 'shuffle':
+                    modoReproduccion = 'repeat_all';
+                    modeBtn.textContent = "🔁 Modo: Repetir Lista";
+                    modeBtn.classList.add('active-mode');
+                    break;
+                case 'repeat_all':
+                    modoReproduccion = 'repeat_one';
+                    modeBtn.textContent = "🔂 Modo: Repetir Una";
+                    modeBtn.classList.add('active-mode');
+                    break;
+                case 'repeat_one':
+                    modoReproduccion = 'normal';
+                    modeBtn.textContent = "🔄 Modo: Normal";
+                    modeBtn.classList.remove('active-mode');
+                    break;
+            }
+        });
+
+        audio.addEventListener('ended', () => {
+            switch(modoReproduccion) {
+                case 'repeat_one':
+                    audio.currentTime = 0;
+                    audio.play();
+                    break;
+                case 'shuffle':
+                case 'repeat_all':
+                    cambiarCancion(1);
+                    break;
+                case 'normal':
+                    if (indiceActual === listaCanciones.length - 1) {
+                        playBtn.textContent = "▶";
+                        vinylDisc.classList.remove('rotating');
+                        audio.currentTime = 0;
+                        seekBar.value = 0;
+                    } else {
+                        cambiarCancion(1);
+                    }
+                    break;
+            }
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            if(!isNaN(audio.duration)) {
+                const porcentaje = (audio.currentTime / audio.duration) * 100;
+                seekBar.value = porcentaje;
+                currentTimeEl.textContent = formatearTiempo(audio.currentTime);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            totalTimeEl.textContent = formatearTiempo(audio.duration);
+        });
+
+        seekBar.addEventListener('input', () => {
+            const nuevoTiempo = (seekBar.value / 100) * audio.duration;
+            audio.currentTime = nuevoTiempo;
+        });
+
+        openPlaylistBtn.addEventListener('click', () => playlistModal.classList.add('active'));
+        closePlaylistBtn.addEventListener('click', () => playlistModal.classList.remove('active'));
+        playlistModal.addEventListener('click', (e) => {
+            if(e.target === playlistModal) playlistModal.classList.remove('active');
+        });
+
+        cargarCanciones();
+    </script>
+</body>
+</html>
